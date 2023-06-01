@@ -1,22 +1,24 @@
 import requests
 from bs4 import BeautifulSoup
-def get_page_images(html):
+from urllib.parse import urljoin
+def get_external_links(html, base_url):
     soup = BeautifulSoup(html, 'html.parser')
-    image_tags = soup.find_all('img')
-    images = []
-    for img in image_tags:
-        src = img.get('src')
-        images.append(src)
-    return images
-
+    link_tags = soup.find_all('a')
+    links = []
+    for link in link_tags:
+        href = link.get('href')
+        if href and not href.startswith('#') and not href.startswith('mailto:'):
+            absolute_url = urljoin(base_url, href)
+            links.append(absolute_url)
+    return links
 url = 'https://www.example.com/'
 response = requests.get(url)
 html = response.text
-images = get_page_images(html)
+external_links = get_external_links(html, url)
 
-if images:
-    print("Зображення на сторінці:")
-    for image in images:
-        print(image)
+if external_links:
+    print("Зовнішні посилання на інші сторінки:")
+    for link in external_links:
+        print(link)
 else:
-    print("Зображення на сторінці не знайдено")
+    print("Зовнішні посилання на інші сторінки не знайдено")
